@@ -267,19 +267,20 @@ h1,h2,h3,h4{font-family:"Schibsted Grotesk",sans-serif;margin:0;line-height:1.15
 @media(max-width:600px){.offer{padding:24px}.offer .grid{grid-template-columns:1fr}}
 
 /* COOKIE BANNER */
-.cookiebar{position:fixed;left:0;right:0;bottom:0;z-index:120;background:#101014;color:#e7e7ea;
-  border-top:1px solid #2b2b30;padding:16px 20px;display:none;box-shadow:0 -8px 28px rgba(0,0,0,.35)}
-.cookiebar.show{display:block}
-.cookiebar .cb-in{max-width:var(--maxw);margin:0 auto;display:flex;align-items:center;gap:20px;flex-wrap:wrap}
-.cookiebar p{margin:0;font-size:14px;line-height:1.55;flex:1;min-width:250px;color:#c9ccd2}
+.cookiebar{position:fixed;inset:0;z-index:120;display:none;align-items:center;justify-content:center;padding:24px;background:rgba(8,10,14,.5)}
+.cookiebar.show{display:flex}
+.cookiebar .cb-in{max-width:430px;width:100%;background:#101014;color:#e7e7ea;border:1px solid rgba(201,162,39,.3);
+  border-radius:16px;padding:28px 28px 26px;box-shadow:0 24px 60px rgba(0,0,0,.5)}
+.cb-title{font-family:"Schibsted Grotesk";font-weight:700;font-size:19px;margin:0 0 8px;color:#fff}
+.cookiebar p{margin:0 0 20px;font-size:14.5px;line-height:1.6;color:#c9ccd2}
 .cookiebar a{color:var(--blue);text-decoration:underline}
-.cookiebar .cb-btns{display:flex;gap:10px;flex-wrap:wrap}
-.cookiebar button{font-family:"Schibsted Grotesk";font-weight:600;font-size:14px;padding:11px 20px;
-  border-radius:8px;cursor:pointer;border:none;transition:opacity .15s}
+.cookiebar .cb-btns{display:flex;gap:10px}
+.cookiebar button{font-family:"Schibsted Grotesk";font-weight:600;font-size:14px;padding:12px 18px;
+  border-radius:8px;cursor:pointer;border:none;transition:opacity .15s;flex:1}
 .cb-accept{background:var(--blue);color:#1c1708}
 .cb-decline{background:transparent;color:#e7e7ea;border:1px solid #3a3a40}
 .cb-accept:hover,.cb-decline:hover{opacity:.88}
-@media(max-width:600px){.cookiebar .cb-in{flex-direction:column;align-items:stretch}.cookiebar button{flex:1}}
+@media(max-width:600px){.cookiebar .cb-btns{flex-direction:column}}
 
 /* LEGAL MODAL */
 .legal{position:fixed;inset:0;z-index:130;display:none;align-items:center;justify-content:center;padding:24px}
@@ -488,6 +489,7 @@ h1,h2,h3,h4{font-family:"Schibsted Grotesk",sans-serif;margin:0;line-height:1.15
 <!-- COOKIE BANNER -->
 <div class="cookiebar" id="cookiebar" role="dialog" aria-label="Cookiemelding">
   <div class="cb-in">
+    <h3 class="cb-title">Cookievoorkeuren</h3>
     <p>Wij gebruiken noodzakelijke cookies en — met uw toestemming — anonieme statistieken om onze website te verbeteren. Meer info in onze <a href="#" data-legal="privacy">privacyverklaring</a> en <a href="#" data-legal="cookies">cookieverklaring</a>.</p>
     <div class="cb-btns">
       <button class="cb-decline" id="cbDecline" type="button">Alleen noodzakelijk</button>
