@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="nl">
 <head>
@@ -263,6 +262,39 @@ h1,h2,h3,h4{font-family:"Schibsted Grotesk",sans-serif;margin:0;line-height:1.15
 .offer button{margin-top:20px;width:100%;justify-content:center}
 @media(max-width:600px){.offer{padding:24px}.offer .grid{grid-template-columns:1fr}}
 
+/* COOKIE BANNER */
+.cookiebar{position:fixed;left:0;right:0;bottom:0;z-index:120;background:#101014;color:#e7e7ea;
+  border-top:1px solid #2b2b30;padding:16px 20px;display:none;box-shadow:0 -8px 28px rgba(0,0,0,.35)}
+.cookiebar.show{display:block}
+.cookiebar .cb-in{max-width:var(--maxw);margin:0 auto;display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.cookiebar p{margin:0;font-size:14px;line-height:1.55;flex:1;min-width:250px;color:#c9ccd2}
+.cookiebar a{color:var(--blue);text-decoration:underline}
+.cookiebar .cb-btns{display:flex;gap:10px;flex-wrap:wrap}
+.cookiebar button{font-family:"Schibsted Grotesk";font-weight:600;font-size:14px;padding:11px 20px;
+  border-radius:8px;cursor:pointer;border:none;transition:opacity .15s}
+.cb-accept{background:var(--blue);color:#1c1708}
+.cb-decline{background:transparent;color:#e7e7ea;border:1px solid #3a3a40}
+.cb-accept:hover,.cb-decline:hover{opacity:.88}
+@media(max-width:600px){.cookiebar .cb-in{flex-direction:column;align-items:stretch}.cookiebar button{flex:1}}
+
+/* LEGAL MODAL */
+.legal{position:fixed;inset:0;z-index:130;display:none;align-items:center;justify-content:center;padding:24px}
+.legal.open{display:flex}
+.legal-back{position:absolute;inset:0;background:rgba(8,10,14,.6);backdrop-filter:blur(3px)}
+.legal-card{position:relative;background:#fff;border-radius:16px;max-width:760px;width:100%;max-height:88vh;
+  overflow-y:auto;box-shadow:0 30px 80px rgba(8,14,24,.4);padding:38px 40px}
+.legal-card h2{font-size:26px;font-weight:700;margin:0 0 4px}
+.legal-card h3{font-size:16px;font-weight:700;margin:22px 0 6px;font-family:"Schibsted Grotesk"}
+.legal-card p,.legal-card li{color:#42505f;font-size:14.5px;line-height:1.65}
+.legal-card p{margin:0 0 10px}
+.legal-card ul{padding-left:20px;margin:6px 0 12px}
+.legal-card a{color:var(--blue)}
+.legal-card .upd{color:var(--muted);font-size:13px;margin-bottom:14px}
+.legal-x{position:absolute;top:14px;right:14px;width:38px;height:38px;border:none;border-radius:50%;
+  background:#eef1f5;color:#15191f;font-size:22px;line-height:1;cursor:pointer}
+.legal-x:hover{background:#e2e6ec}
+@media(max-width:600px){.legal{padding:0}.legal-card{max-height:100dvh;border-radius:0;padding:28px 22px}}
+
 .reveal{opacity:0;transform:translateY(16px);transition:opacity .5s ease,transform .5s ease}
 .reveal.in{opacity:1;transform:none}
 @media(prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none}html{scroll-behavior:auto}}
@@ -425,7 +457,7 @@ h1,h2,h3,h4{font-family:"Schibsted Grotesk",sans-serif;margin:0;line-height:1.15
     </div>
     <div class="foot-bottom">
       <span>© 2026 H-M Cars · Occasions in elke prijsklasse</span>
-      <span><a href="#">Privacyverklaring</a> · <a href="#">Cookies</a></span>
+      <span><a href="#" data-legal="privacy">Privacyverklaring</a> · <a href="#" data-legal="cookies">Cookies</a></span>
     </div>
   </div>
 </footer>
@@ -436,6 +468,26 @@ h1,h2,h3,h4{font-family:"Schibsted Grotesk",sans-serif;margin:0;line-height:1.15
   <div class="modal-card">
     <button class="modal-x" data-close aria-label="Sluiten">&times;</button>
     <div class="modal-scroll" id="mBody"></div>
+  </div>
+</div>
+
+<!-- COOKIE BANNER -->
+<div class="cookiebar" id="cookiebar" role="dialog" aria-label="Cookiemelding">
+  <div class="cb-in">
+    <p>Wij gebruiken noodzakelijke cookies en — met uw toestemming — anonieme statistieken om onze website te verbeteren. Meer info in onze <a href="#" data-legal="privacy">privacyverklaring</a> en <a href="#" data-legal="cookies">cookieverklaring</a>.</p>
+    <div class="cb-btns">
+      <button class="cb-decline" id="cbDecline" type="button">Alleen noodzakelijk</button>
+      <button class="cb-accept" id="cbAccept" type="button">Accepteren</button>
+    </div>
+  </div>
+</div>
+
+<!-- PRIVACY / COOKIE MODAL -->
+<div class="legal" id="legalModal" aria-hidden="true" role="dialog" aria-modal="true" aria-label="Juridische informatie">
+  <div class="legal-back" data-legalclose></div>
+  <div class="legal-card">
+    <button class="legal-x" data-legalclose aria-label="Sluiten">&times;</button>
+    <div id="legalBody"></div>
   </div>
 </div>
 
@@ -610,6 +662,94 @@ document.getElementById('introPic').innerHTML='<img class="intro-logo" src="data
 /* reveal */
 const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:.1});
 document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+</script>
+
+<script>
+/* ---- Cookie consent + privacy/cookie verklaring ---- */
+(function(){
+  var bar=document.getElementById('cookiebar');
+  function getC(){try{return localStorage.getItem('hm_consent');}catch(e){return null;}}
+  function setC(v){try{localStorage.setItem('hm_consent',v);}catch(e){}}
+  function loadAnalytics(){
+    if(window.__hmVA) return; window.__hmVA=true;
+    window.va=window.va||function(){(window.vaq=window.vaq||[]).push(arguments);};
+    var s=document.createElement('script'); s.defer=true; s.src='/_vercel/insights/script.js';
+    document.head.appendChild(s);
+  }
+  function trackVisit(){
+    /* >>> Vul hier je Supabase-gegevens in <<< */
+    var SUPABASE_URL='https://kzgapkklsewqexeldgto.supabase.co';
+    var SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6Z2Fwa2tsc2V3cWV4ZWxkZ3RvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM1MDg1OTYsImV4cCI6MjA5OTA4NDU5Nn0.BzXCxI5HU1qJcEdnyuWq2GEdP2ECckmFgzjDowRodfQ';
+    if(SUPABASE_URL.indexOf('JOUW-')>-1 || window.__hmTracked) return;
+    window.__hmTracked=true;
+    var p=new URLSearchParams(location.search);
+    var d={pagina:location.pathname,referrer:document.referrer||null,
+      utm_source:p.get('utm_source'),utm_medium:p.get('utm_medium'),utm_campaign:p.get('utm_campaign'),
+      taal:navigator.language,scherm:screen.width+'x'+screen.height,user_agent:navigator.userAgent};
+    function send(){fetch(SUPABASE_URL+'/rest/v1/bezoeken',{method:'POST',headers:{'Content-Type':'application/json','apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY,'Prefer':'return=minimal'},body:JSON.stringify(d)}).catch(function(){});}
+    fetch('https://ipwho.is/').then(function(r){return r.json();}).then(function(g){if(g&&g.success){d.ip=g.ip;d.land=g.country;d.stad=g.city;d.isp=(g.connection&&g.connection.isp)||null;}}).catch(function(){}).then(send);
+  }
+  function enableTracking(){ loadAnalytics(); trackVisit(); }
+  var saved=getC();
+  window.hmConsent=saved||'pending';
+  if(saved==='all') enableTracking();
+  if(!saved && bar) bar.classList.add('show');
+  var acc=document.getElementById('cbAccept'), dec=document.getElementById('cbDecline');
+  if(acc) acc.addEventListener('click',function(){setC('all');window.hmConsent='all';bar.classList.remove('show');enableTracking();});
+  if(dec) dec.addEventListener('click',function(){setC('necessary');window.hmConsent='necessary';bar.classList.remove('show');});
+
+  var legal=document.getElementById('legalModal'), lbody=document.getElementById('legalBody');
+  var TEXT={
+  privacy:`<h2>Privacyverklaring</h2>
+<p class="upd">Laatst bijgewerkt: juli 2026</p>
+<p>H-M Cars hecht veel waarde aan uw privacy en gaat zorgvuldig om met uw persoonsgegevens, in overeenstemming met de Algemene Verordening Gegevensbescherming (AVG).</p>
+<h3>1. Wie zijn wij</h3>
+<p>H-M Cars is verantwoordelijk voor de verwerking van persoonsgegevens zoals beschreven in deze verklaring.<br>Adres: Sint Victorstraat 53, 2741 JP Waddinxveen<br>E-mail: hmcarrss@gmail.com<br>Telefoon: 06 18 80 37 57</p>
+<h3>2. Welke gegevens verwerken wij</h3>
+<ul>
+<li><strong>Via het verkoopformulier:</strong> uw naam, e-mailadres, telefoonnummer, gegevens en foto's van uw auto en uw omschrijving.</li>
+<li><strong>Bij bezoek aan de website (met uw toestemming):</strong> uw IP-adres, globale locatie (land en stad), de bezochte pagina's, herkomst (via welke website of bron u kwam, inclusief eventuele campagnelabels), taal, schermformaat en browser. Deze gegevens worden opgeslagen in onze beveiligde database om te analyseren waar ons websiteverkeer vandaan komt.</li>
+</ul>
+<h3>3. Waarvoor gebruiken wij deze gegevens</h3>
+<ul>
+<li>Om uw verkoop- of contactaanvraag te behandelen en met u contact op te nemen.</li>
+<li>Om onze website en dienstverlening te verbeteren.</li>
+</ul>
+<h3>4. Grondslag</h3>
+<p>Wij verwerken uw gegevens op basis van uw toestemming, de uitvoering van een overeenkomst (uw aanvraag) en/of ons gerechtvaardigd belang om onze dienstverlening te verbeteren.</p>
+<h3>5. Delen met derden</h3>
+<p>Wij verkopen uw gegevens niet. Wij schakelen wel dienstverleners in die namens ons gegevens verwerken: FormSubmit (contactformulier), Vercel (hosting) en Supabase (opslag van bezoekstatistieken). Voor het bepalen van de globale locatie gebruiken wij een IP-geolocatiedienst (ipwho.is). Met deze partijen zijn passende afspraken gemaakt over de verwerking van gegevens.</p>
+<h3>6. Bewaartermijn</h3>
+<p>Wij bewaren uw gegevens niet langer dan nodig is voor de genoemde doeleinden, of zolang wettelijk vereist.</p>
+<h3>7. Beveiliging</h3>
+<p>Wij nemen passende technische en organisatorische maatregelen om uw gegevens te beschermen tegen verlies of onrechtmatig gebruik.</p>
+<h3>8. Uw rechten</h3>
+<p>U heeft het recht om uw gegevens in te zien, te corrigeren of te laten verwijderen, en om bezwaar te maken tegen of beperking te vragen van de verwerking. Ook kunt u een klacht indienen bij de Autoriteit Persoonsgegevens (autoriteitpersoonsgegevens.nl). Neem hiervoor contact op via hmcarrss@gmail.com.</p>
+<h3>9. Contact</h3>
+<p>Vragen over deze verklaring? Mail naar hmcarrss@gmail.com of bel 06 18 80 37 57.</p>`,
+  cookies:`<h2>Cookieverklaring</h2>
+<p class="upd">Laatst bijgewerkt: juli 2026</p>
+<p>Cookies zijn kleine bestanden die op uw apparaat worden opgeslagen wanneer u een website bezoekt. Wij gebruiken cookies zo beperkt mogelijk.</p>
+<h3>Noodzakelijke cookies</h3>
+<p>Deze zijn nodig om de website goed te laten werken, waaronder het onthouden van uw cookievoorkeur. Hiervoor is geen toestemming vereist.</p>
+<h3>Statistische cookies</h3>
+<p>Met uw toestemming houden wij bezoekstatistieken bij (zoals bezochte pagina's, herkomst, globale locatie en IP-adres) om te analyseren waar ons verkeer vandaan komt en onze website te verbeteren. Deze gegevens worden niet gebruikt voor advertenties of het volgen van u op andere websites.</p>
+<h3>Geen advertentiecookies</h3>
+<p>Wij plaatsen geen tracking- of advertentiecookies van derden.</p>
+<h3>Toestemming beheren</h3>
+<p>U kunt uw keuze op elk moment wijzigen door de cookies van deze website in uw browser te verwijderen; bij uw volgende bezoek verschijnt de cookiemelding opnieuw.</p>
+<h3>Contact</h3>
+<p>Vragen? Mail naar hmcarrss@gmail.com.</p>`
+  };
+  function openLegal(w){ if(!lbody) return; lbody.innerHTML=TEXT[w]||''; legal.classList.add('open'); legal.setAttribute('aria-hidden','false'); document.body.style.overflow='hidden'; legal.querySelector('.legal-x').focus(); }
+  function closeLegal(){ legal.classList.remove('open'); legal.setAttribute('aria-hidden','true'); document.body.style.overflow=''; }
+  document.addEventListener('click',function(e){
+    var t=e.target.closest('[data-legal]');
+    if(t){ e.preventDefault(); openLegal(t.getAttribute('data-legal')); return; }
+    if(e.target.hasAttribute('data-legalclose')) closeLegal();
+  });
+  document.addEventListener('keydown',function(e){ if(e.key==='Escape' && legal.classList.contains('open')) closeLegal(); });
+})();
 </script>
 </body>
 </html>
