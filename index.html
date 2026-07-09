@@ -704,17 +704,13 @@ document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
     document.head.appendChild(s);
   }
   function trackVisit(){
-    /* >>> Vul hier je Supabase-gegevens in <<< */
-    var SUPABASE_URL='https://kzgapkklsewqexeldgto.supabase.co';
-    var SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6Z2Fwa2tsc2V3cWV4ZWxkZ3RvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM1MDg1OTYsImV4cCI6MjA5OTA4NDU5Nn0.BzXCxI5HU1qJcEdnyuWq2GEdP2ECckmFgzjDowRodfQ';
-    if(SUPABASE_URL.indexOf('JOUW-')>-1 || window.__hmTracked) return;
+    if(window.__hmTracked) return;
     window.__hmTracked=true;
     var p=new URLSearchParams(location.search);
     var d={pagina:location.pathname,referrer:document.referrer||null,
       utm_source:p.get('utm_source'),utm_medium:p.get('utm_medium'),utm_campaign:p.get('utm_campaign'),
-      taal:navigator.language,scherm:screen.width+'x'+screen.height,user_agent:navigator.userAgent};
-    function send(){fetch(SUPABASE_URL+'/rest/v1/bezoeken',{method:'POST',headers:{'Content-Type':'application/json','apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY,'Prefer':'return=minimal'},body:JSON.stringify(d)}).catch(function(){});}
-    fetch('https://ipwho.is/').then(function(r){return r.json();}).then(function(g){if(g&&g.success){d.ip=g.ip;d.land=g.country;d.stad=g.city;d.isp=(g.connection&&g.connection.isp)||null;}}).catch(function(){}).then(send);
+      taal:navigator.language,scherm:screen.width+'x'+screen.height};
+    fetch('/api/track',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(d),keepalive:true}).catch(function(){});
   }
   function enableTracking(){ loadAnalytics(); trackVisit(); }
   var saved=getC();
@@ -745,7 +741,7 @@ document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
 <h3>4. Grondslag</h3>
 <p>Wij verwerken uw gegevens op basis van uw toestemming, de uitvoering van een overeenkomst (uw aanvraag) en/of ons gerechtvaardigd belang om onze dienstverlening te verbeteren.</p>
 <h3>5. Delen met derden</h3>
-<p>Wij verkopen uw gegevens niet. Wij schakelen wel dienstverleners in die namens ons gegevens verwerken: FormSubmit (contactformulier), Vercel (hosting) en Supabase (opslag van bezoekstatistieken). Voor het bepalen van de globale locatie gebruiken wij een IP-geolocatiedienst (ipwho.is). Met deze partijen zijn passende afspraken gemaakt over de verwerking van gegevens.</p>
+<p>Wij verkopen uw gegevens niet. Wij schakelen wel dienstverleners in die namens ons gegevens verwerken: FormSubmit (contactformulier), Vercel (hosting) en Supabase (opslag van bezoekstatistieken). De globale locatie (land, stad en regio) wordt op basis van het IP-adres bepaald via de infrastructuur van Vercel. Met deze partijen zijn passende afspraken gemaakt over de verwerking van gegevens.</p>
 <h3>6. Bewaartermijn</h3>
 <p>Wij bewaren uw gegevens niet langer dan nodig is voor de genoemde doeleinden, of zolang wettelijk vereist.</p>
 <h3>7. Beveiliging</h3>
@@ -767,7 +763,7 @@ document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
 <ul>
 <li><strong>Vercel</strong> – hosting en bezoekstatistieken van de website.</li>
 <li><strong>Supabase</strong> – opslag van de bezoekgegevens in onze beveiligde database.</li>
-<li><strong>ipwho.is</strong> – het bepalen van de globale locatie op basis van het IP-adres.</li>
+<li><strong>Vercel</strong> – bepaalt op basis van het IP-adres de globale locatie (land, stad, regio) van het bezoek.</li>
 </ul>
 <h3>4. Geen advertentie- of trackingcookies</h3>
 <p>Wij plaatsen géén advertentiecookies en volgen u niet over andere websites. Uw gegevens worden niet verkocht of gebruikt voor advertentiedoeleinden.</p>
