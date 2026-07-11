@@ -25,6 +25,14 @@ export default async function handler(req, res) {
     const postcode = h['x-vercel-ip-postal-code'] || null;
     const tijdzone = h['x-vercel-ip-timezone'] || null;
 
+    // Leesbare Nederlandse tijd (Europe/Amsterdam)
+    var tijd_lokaal = null;
+    try {
+      tijd_lokaal = new Intl.DateTimeFormat('nl-NL', {
+        timeZone: 'Europe/Amsterdam', dateStyle: 'short', timeStyle: 'medium'
+      }).format(new Date());
+    } catch (e) {}
+
     // Gegevens vanuit de browser
     let b = req.body;
     if (typeof b === 'string') { try { b = JSON.parse(b); } catch (e) { b = {}; } }
@@ -44,7 +52,8 @@ export default async function handler(req, res) {
       stad: stad,
       regio: regio,
       postcode: postcode,
-      tijdzone: tijdzone
+      tijdzone: tijdzone,
+      tijd_lokaal: tijd_lokaal
     };
 
     const r = await fetch(process.env.SUPABASE_URL + '/rest/v1/bezoeken', {
