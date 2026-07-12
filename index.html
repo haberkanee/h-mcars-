@@ -1093,6 +1093,8 @@ document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
     });
     var s=sortSel.value;
     list.sort(function(a,b){
+      var av=(a.c.status==='verkocht')?1:0, bv=(b.c.status==='verkocht')?1:0;
+      if(av!==bv) return av-bv;
       if(s==='prijs-laag'){ return (isNaN(num(a.c.p))?1e12:num(a.c.p))-(isNaN(num(b.c.p))?1e12:num(b.c.p)); }
       if(s==='prijs-hoog'){ return (isNaN(num(b.c.p))?-1:num(b.c.p))-(isNaN(num(a.c.p))?-1:num(a.c.p)); }
       if(s==='km-laag'){ return (isNaN(num(a.c.km))?1e12:num(a.c.km))-(isNaN(num(b.c.km))?1e12:num(b.c.km)); }
