@@ -318,6 +318,13 @@ h1,h2,h3,h4{font-family:"Schibsted Grotesk",sans-serif;margin:0;line-height:1.15
 }
 @media(max-width:520px){.aanbod-grid{grid-template-columns:1fr}}
 
+/* STATUS BANNER */
+.ribbon{position:absolute;top:15px;right:-42px;z-index:4;transform:rotate(45deg);
+  background:#c0392b;color:#fff;font-family:"Schibsted Grotesk";font-weight:700;font-size:11.5px;
+  letter-spacing:.1em;text-transform:uppercase;padding:5px 48px;box-shadow:0 2px 8px rgba(0,0,0,.35)}
+.ribbon.res{background:var(--blue);color:#1c1708}
+.m-main .ribbon{top:22px;right:-46px;font-size:13px;padding:7px 58px}
+
 .reveal{opacity:0;transform:translateY(16px);transition:opacity .5s ease,transform .5s ease}
 .reveal.in{opacity:1;transform:none}
 @media(prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none}html{scroll-behavior:auto}}
@@ -491,7 +498,6 @@ h1,h2,h3,h4{font-family:"Schibsted Grotesk",sans-serif;margin:0;line-height:1.15
 <div class="aanbod" id="aanbodView" aria-hidden="true">
   <div class="aanbod-top">
     <img src="data:image/png;base64,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" alt="H-M Cars">
-    <h2>Ons aanbod</h2>
     <button class="aanbod-close" data-aanbodclose aria-label="Sluiten">&times;</button>
   </div>
   <div class="aanbod-body">
@@ -633,10 +639,11 @@ const ic={cal:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" strok
   road:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
   fuel:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 22V4a1 1 0 011-1h9a1 1 0 011 1v18"/><path d="M3 13h11"/><path d="M14 8h2a2 2 0 012 2v6a2 2 0 002 2 2 2 0 002-2v-7l-3-3"/></svg>',
   gear:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 3v18M6 8h12V3M18 8v5a3 3 0 01-3 3H6"/></svg>'};
+function statusRibbon(c){ if(!c||!c.status||c.status==='beschikbaar') return ''; var sold=c.status==='verkocht'; return '<span class="ribbon '+(sold?'sold':'res')+'">'+(sold?'Verkocht':'Gereserveerd')+'</span>'; }
 function renderOccasions(){
 document.getElementById('carGrid').innerHTML=cars.map((c,i)=>`
   <article class="car">
-    <div class="car-pic"><span class="car-fuel">${c.f}</span>${carSVG(c.b)}${c.img?`<img class="car-photo" src="${c.img}" alt="${c.m}" loading="lazy" onerror="this.style.display='none'">`:''}</div>
+    <div class="car-pic"><span class="car-fuel">${c.f}</span>${carSVG(c.b)}${c.img?`<img class="car-photo" src="${c.img}" alt="${c.m}" loading="lazy" onerror="this.style.display='none'">`:''}${statusRibbon(c)}</div>
     <div class="car-info">
       <h3>${c.m}</h3>
       <div class="trim">${c.s}</div>
@@ -674,7 +681,7 @@ function openCar(i){
   const imgs=c.imgs||(c.img?[c.img]:[]);
   currentImgs=imgs;
   const media=imgs.length
-    ? `<div class="m-gallery"><div class="m-main"><img id="mMain" src="${imgs[0]}" alt="${c.m}"></div>`+
+    ? `<div class="m-gallery"><div class="m-main"><img id="mMain" src="${imgs[0]}" alt="${c.m}">${statusRibbon(c)}</div>`+
       (imgs.length>1?`<div class="m-thumbs">${imgs.map((u,k)=>`<button type="button" class="m-thumb${k===0?' on':''}" data-k="${k}"><img src="${u}" alt="" loading="lazy"></button>`).join('')}</div>`:'')+`</div>`
     : `<div class="m-media">${carSVG(c.b)}</div>`;
   const specs=specRows(c).map(s=>`<div class="m-spec"><span class="m-sl">${s[0]}</span><span class="m-sv">${s[1]}</span></div>`).join('');
@@ -880,11 +887,13 @@ document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
   function bodyTypeFrom(s){s=(s||'').toLowerCase();if(s.indexOf('suv')>-1)return'suv';if(s.indexOf('station')>-1||s.indexOf('combi')>-1||s.indexOf('estate')>-1)return'estate';if(s.indexOf('sedan')>-1)return'sedan';if(s.indexOf('compact')>-1||s.indexOf('city')>-1)return'city';return'hatch';}
 
   /* ---------- Occasions uit de database laden ---------- */
+  var editingId=null, existingFotos=[];
+  function suffix(v,u){ v=(v==null?'':String(v)).trim(); if(!v) return ''; return new RegExp(u,'i').test(v)?v:v+' '+u; }
   function rowToCar(r){
-    return {m:r.model||'Auto',s:r.subtitle||'',y:r.bouwjaar||'',km:r.km||'',f:r.brandstof||'',t:r.transmissie||'',
+    return {m:r.model||'Auto',s:r.subtitle||'',y:r.bouwjaar||'',km:suffix(r.km,'km'),f:r.brandstof||'',t:r.transmissie||'',
       p:r.prijs||'',b:r.body||'sedan',img:(r.fotos&&r.fotos[0])||null,imgs:r.fotos||[],
-      bodyL:r.carrosserie||'',color:r.kleur||'',power:r.vermogen||'',apk:r.apk||'',
-      loc:r.locatie||'Waddinxveen',desc:r.omschrijving||'',opts:r.opties||[],_db:true,_id:r.id};
+      bodyL:r.carrosserie||'',color:r.kleur||'',power:suffix(r.vermogen,'pk'),apk:r.apk||'',
+      loc:r.locatie||'Waddinxveen',desc:r.omschrijving||'',opts:r.opties||[],status:r.status||'beschikbaar',_db:true,_id:r.id};
   }
   function loadCars(){
     if(!sb||typeof cars==='undefined') return;
@@ -900,8 +909,9 @@ document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
 
   /* ---------- Beheer ---------- */
   var modal=document.getElementById('adminModal'), body=document.getElementById('adminBody');
-  function openAdmin(){ if(!modal) return; modal.classList.add('open'); modal.setAttribute('aria-hidden','false'); document.body.style.overflow='hidden'; renderAdmin(); }
-  function closeAdmin(){ if(!modal) return; modal.classList.remove('open'); modal.setAttribute('aria-hidden','true'); document.body.style.overflow=''; }
+  var ADEF=document.title;
+  function openAdmin(){ if(!modal) return; modal.classList.add('open'); modal.setAttribute('aria-hidden','false'); document.body.style.overflow='hidden'; document.title='Beheer \u2014 H-M Cars'; renderAdmin(); }
+  function closeAdmin(){ if(!modal) return; modal.classList.remove('open'); modal.setAttribute('aria-hidden','true'); document.body.style.overflow=''; document.title=ADEF; }
 
   function renderAdmin(){
     if(!sb){ body.innerHTML='<h2>Beheer</h2><p>De database is niet beschikbaar. Controleer de Supabase-instellingen.</p>'; return; }
@@ -927,30 +937,38 @@ document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
     });
   }
 
-  function dashboard(){
-    body.innerHTML='<h2>Nieuwe auto toevoegen</h2><p class="sub">Vul de gegevens in en voeg foto\u0027s toe. De auto verschijnt daarna direct op de website.</p>'
+  function dashboard(){ editingId=null; existingFotos=[]; showForm(null); }
+  function showForm(row){
+    var e=row||{}; editingId=row?row.id:null; existingFotos=(row&&row.fotos)?row.fotos.slice():[];
+    var st=e.status||'beschikbaar';
+    var stOpts=[['beschikbaar','Beschikbaar'],['gereserveerd','Gereserveerd'],['verkocht','Verkocht']].map(function(o){return '<option value="'+o[0]+'"'+(st===o[0]?' selected':'')+'>'+o[1]+'</option>';}).join('');
+    body.innerHTML='<h2>'+(editingId?'Auto bewerken':'Nieuwe auto toevoegen')+'</h2>'
+      +'<p class="sub">'+(editingId?'Pas de gegevens aan en sla op. Nieuwe foto\u0027s worden aan de bestaande toegevoegd.':'Vul de gegevens in en voeg foto\u0027s toe. Bij km en vermogen vul je alleen het getal in.')+'</p>'
       +'<div class="grid">'
-      +'<div><label>Merk en model *</label><input id="f_model" placeholder="Volkswagen Golf"></div>'
-      +'<div><label>Subtitel</label><input id="f_sub" placeholder="1.5 TSI \u00b7 Automaat"></div>'
-      +'<div><label>Prijs</label><input id="f_prijs" placeholder="\u20ac 14.950,-"></div>'
-      +'<div><label>Bouwjaar</label><input id="f_jaar" placeholder="2019"></div>'
-      +'<div><label>Kilometerstand</label><input id="f_km" placeholder="120.000 km"></div>'
-      +'<div><label>Brandstof</label><input id="f_fuel" placeholder="Benzine"></div>'
-      +'<div><label>Transmissie</label><input id="f_trans" placeholder="Automaat"></div>'
-      +'<div><label>Carrosserie</label><input id="f_body" placeholder="Hatchback"></div>'
-      +'<div><label>Kleur</label><input id="f_kleur" placeholder="Zwart"></div>'
-      +'<div><label>Vermogen</label><input id="f_pk" placeholder="150 pk"></div>'
-      +'<div class="full"><label>Omschrijving</label><textarea id="f_desc"></textarea></div>'
-      +'<div class="full"><label>Opties (\u00e9\u00e9n per regel)</label><textarea id="f_opts" placeholder="Panoramadak&#10;Cruise control&#10;Navigatie"></textarea></div>'
-      +'<div class="full"><label>Foto\u0027s</label><input type="file" id="f_fotos" accept="image/*" multiple></div>'
+      +'<div><label>Merk en model *</label><input id="f_model" value="'+esc(e.model)+'" placeholder="Volkswagen Golf"></div>'
+      +'<div><label>Subtitel</label><input id="f_sub" value="'+esc(e.subtitle)+'" placeholder="1.5 TSI \u00b7 Automaat"></div>'
+      +'<div><label>Prijs</label><input id="f_prijs" value="'+esc(e.prijs)+'" placeholder="\u20ac 14.950,-"></div>'
+      +'<div><label>Bouwjaar</label><input id="f_jaar" value="'+esc(e.bouwjaar)+'" placeholder="2019"></div>'
+      +'<div><label>Kilometerstand <span style="color:#9aa0a9;font-weight:400">(alleen getal)</span></label><input id="f_km" value="'+esc(e.km)+'" placeholder="120.000"></div>'
+      +'<div><label>Brandstof</label><input id="f_fuel" value="'+esc(e.brandstof)+'" placeholder="Benzine"></div>'
+      +'<div><label>Transmissie</label><input id="f_trans" value="'+esc(e.transmissie)+'" placeholder="Automaat"></div>'
+      +'<div><label>Carrosserie</label><input id="f_body" value="'+esc(e.carrosserie)+'" placeholder="Hatchback"></div>'
+      +'<div><label>Kleur</label><input id="f_kleur" value="'+esc(e.kleur)+'" placeholder="Zwart"></div>'
+      +'<div><label>Vermogen <span style="color:#9aa0a9;font-weight:400">(alleen getal)</span></label><input id="f_pk" value="'+esc(e.vermogen)+'" placeholder="150"></div>'
+      +'<div><label>Status</label><select id="f_status">'+stOpts+'</select></div>'
+      +'<div class="full"><label>Omschrijving</label><textarea id="f_desc">'+esc(e.omschrijving)+'</textarea></div>'
+      +'<div class="full"><label>Opties (\u00e9\u00e9n per regel)</label><textarea id="f_opts" placeholder="Panoramadak&#10;Cruise control">'+esc((e.opties||[]).join('\n'))+'</textarea></div>'
+      +'<div class="full"><label>Foto\u0027s'+(editingId?' toevoegen':'')+'</label><input type="file" id="f_fotos" accept="image/*" multiple>'+(existingFotos.length?'<p style="font-size:12.5px;color:#7a8592;margin:6px 0 0">'+existingFotos.length+' bestaande foto\u0027s blijven behouden.</p>':'')+'</div>'
       +'</div>'
       +'<p id="adMsg" style="font-size:13px;margin:6px 0 10px"></p>'
-      +'<button class="btn btn-pri" id="adSave" type="button">Auto plaatsen</button> '
+      +'<button class="btn btn-pri" id="adSave" type="button">'+(editingId?'Wijzigingen opslaan':'Auto plaatsen')+'</button> '
+      +(editingId?'<button class="btn btn-ghost" id="adCancel" type="button">Annuleren</button> ':'')
       +'<button class="btn btn-ghost" id="adLogout" type="button">Uitloggen</button>'
       +'<h3 style="font-family:\u0027Schibsted Grotesk\u0027;font-size:16px;margin:28px 0 8px">Huidige auto\u0027s (via website)</h3>'
       +'<div id="adList" style="font-size:14px">Laden...</div>';
     document.getElementById('adLogout').addEventListener('click',function(){ sb.auth.signOut().then(loginView); });
     document.getElementById('adSave').addEventListener('click',saveCar);
+    var cc=document.getElementById('adCancel'); if(cc) cc.addEventListener('click',dashboard);
     listCars();
   }
 
@@ -960,11 +978,11 @@ document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
     if(!model){ msg.style.color='#c0392b'; msg.textContent='Vul minimaal merk en model in.'; return; }
     var btn=document.getElementById('adSave'); btn.disabled=true;
     msg.textContent='Bezig met opslaan...';
-    var files=document.getElementById('f_fotos').files, uploads=[], urls=[];
+    var files=document.getElementById('f_fotos').files, uploads=[], urls=existingFotos.slice();
     for(var i=0;i<files.length;i++) uploads.push(files[i]);
     function done(ok,txt){ btn.disabled=false; msg.style.color=ok?'#1a7f37':'#c0392b'; msg.textContent=txt; }
     function uploadNext(k){
-      if(k>=uploads.length) return insertRow();
+      if(k>=uploads.length) return saveRow();
       var file=uploads[k];
       var path=Date.now()+'_'+k+'_'+file.name.replace(/[^a-zA-Z0-9._-]/g,'');
       msg.textContent='Foto '+(k+1)+' van '+uploads.length+' uploaden...';
@@ -973,14 +991,17 @@ document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
         uploadNext(k+1);
       }).catch(function(){ uploadNext(k+1); });
     }
-    function insertRow(){
+    function saveRow(){
       var opts=val('f_opts').split('\n').map(function(x){return x.trim();}).filter(Boolean);
+      var stEl=document.getElementById('f_status');
       var row={model:model,subtitle:val('f_sub'),prijs:val('f_prijs'),bouwjaar:val('f_jaar'),km:val('f_km'),
         brandstof:val('f_fuel'),transmissie:val('f_trans'),carrosserie:val('f_body'),body:bodyTypeFrom(val('f_body')),
-        kleur:val('f_kleur'),vermogen:val('f_pk'),locatie:'Waddinxveen',omschrijving:val('f_desc'),opties:opts,fotos:urls};
-      sb.from('autos').insert(row).then(function(r){
+        kleur:val('f_kleur'),vermogen:val('f_pk'),locatie:'Waddinxveen',omschrijving:val('f_desc'),opties:opts,fotos:urls,
+        status:(stEl?stEl.value:'beschikbaar')};
+      var q=editingId?sb.from('autos').update(row).eq('id',editingId):sb.from('autos').insert(row);
+      q.then(function(r){
         if(r.error) done(false,'Opslaan mislukt: '+r.error.message);
-        else { done(true,'Auto geplaatst! Hij staat nu op de website.'); loadCars(); setTimeout(dashboard,900); }
+        else { done(true, editingId?'Wijzigingen opgeslagen!':'Auto geplaatst! Hij staat nu op de website.'); loadCars(); setTimeout(dashboard,900); }
       });
     }
     uploadNext(0);
@@ -988,12 +1009,17 @@ document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
 
   function listCars(){
     var el=document.getElementById('adList');
-    sb.from('autos').select('id,model,prijs').order('created_at',{ascending:false}).then(function(r){
+    sb.from('autos').select('*').order('created_at',{ascending:false}).then(function(r){
       if(r.error){ el.textContent='Kon lijst niet laden.'; return; }
       if(!r.data.length){ el.textContent='Nog geen auto\u0027s toegevoegd via de website.'; return; }
-      el.innerHTML=r.data.map(function(c){
-        return '<div style="display:flex;justify-content:space-between;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid var(--line)"><span>'+esc(c.model)+' \u2014 '+esc(c.prijs||'')+'</span><button class="btn btn-ghost" style="padding:6px 12px;font-size:13px" data-del="'+c.id+'" type="button">Verwijderen</button></div>';
+      var rows=r.data;
+      el.innerHTML=rows.map(function(c,idx){
+        var badge=(c.status&&c.status!=='beschikbaar')?' <span style="font-size:11px;font-weight:700;color:'+(c.status==='verkocht'?'#c0392b':'#a6841c')+'">('+c.status+')</span>':'';
+        return '<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line)"><span>'+esc(c.model)+' \u2014 '+esc(c.prijs||'')+badge+'</span><span style="display:flex;gap:6px;flex:0 0 auto"><button class="btn btn-ghost" style="padding:6px 11px;font-size:13px" data-edit="'+idx+'" type="button">Bewerken</button><button class="btn btn-ghost" style="padding:6px 11px;font-size:13px" data-del="'+c.id+'" type="button">Verwijderen</button></span></div>';
       }).join('');
+      Array.prototype.forEach.call(el.querySelectorAll('[data-edit]'),function(b){
+        b.addEventListener('click',function(){ showForm(rows[+b.getAttribute('data-edit')]); if(body.scrollIntoView) body.scrollIntoView(); });
+      });
       Array.prototype.forEach.call(el.querySelectorAll('[data-del]'),function(b){
         b.addEventListener('click',function(){
           if(!window.confirm('Deze auto verwijderen?')) return;
@@ -1035,7 +1061,7 @@ document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
   }
   function cardHTML(c,i){
     var photo=c.img?'<img class="car-photo" src="'+esc(c.img)+'" alt="'+esc(c.m)+'" loading="lazy" onerror="this.style.display=&#39;none&#39;">':'';
-    return '<article class="car"><div class="car-pic"><span class="car-fuel">'+esc(c.f)+'</span>'+carSVG(c.b||'sedan')+photo+'</div>'
+    return '<article class="car"><div class="car-pic"><span class="car-fuel">'+esc(c.f)+'</span>'+carSVG(c.b||'sedan')+photo+(typeof statusRibbon==='function'?statusRibbon(c):'')+'</div>'
       +'<div class="car-info"><h3>'+esc(c.m)+'</h3><div class="trim">'+esc(c.s)+'</div>'
       +'<div class="car-meta"><span class="m">'+ic.cal+esc(c.y)+'</span><span class="m">'+ic.road+esc(c.km)+'</span><span class="m">'+ic.gear+esc(c.t)+'</span></div>'
       +'<div class="car-foot"><span class="price">'+esc(c.p)+'</span><button class="more" type="button" data-i="'+i+'">Bekijk \u2192</button></div>'
@@ -1078,8 +1104,9 @@ document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
   }
   function toggleSide(){ side.classList.toggle('open'); }
   function closeSide(){ side.classList.remove('open'); }
-  function openView(){ buildFilters(); render(); view.classList.add('open'); view.setAttribute('aria-hidden','false'); document.body.style.overflow='hidden'; }
-  function closeView(){ view.classList.remove('open'); view.setAttribute('aria-hidden','true'); document.body.style.overflow=''; closeSide(); }
+  var DEF_TITLE=document.title;
+  function openView(){ buildFilters(); render(); view.classList.add('open'); view.setAttribute('aria-hidden','false'); document.body.style.overflow='hidden'; document.title='Ons aanbod \u2014 H-M Cars'; }
+  function closeView(){ view.classList.remove('open'); view.setAttribute('aria-hidden','true'); document.body.style.overflow=''; closeSide(); document.title=DEF_TITLE; }
 
   view.addEventListener('change',render);
   var fb=document.getElementById('aanbodFilterBtn'); if(fb) fb.addEventListener('click',toggleSide);
