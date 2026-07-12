@@ -641,7 +641,7 @@ const ic={cal:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" strok
   gear:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 3v18M6 8h12V3M18 8v5a3 3 0 01-3 3H6"/></svg>'};
 function statusRibbon(c){ if(!c||!c.status||c.status==='beschikbaar') return ''; var sold=c.status==='verkocht'; return '<span class="ribbon '+(sold?'sold':'res')+'">'+(sold?'Verkocht':'Gereserveerd')+'</span>'; }
 function renderOccasions(){
-document.getElementById('carGrid').innerHTML=cars.map((c,i)=>`
+document.getElementById('carGrid').innerHTML=cars.map((c,i)=> c.status==='verkocht' ? '' : `
   <article class="car">
     <div class="car-pic"><span class="car-fuel">${c.f}</span>${carSVG(c.b)}${c.img?`<img class="car-photo" src="${c.img}" alt="${c.m}" loading="lazy" onerror="this.style.display='none'">`:''}${statusRibbon(c)}</div>
     <div class="car-info">
