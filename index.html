@@ -398,6 +398,10 @@ body.loaded .hero-art{animation:fadeUp .8s .35s both}
 .reveal.in{opacity:1;transform:none}
 @media(prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none}html{scroll-behavior:auto}}
 :focus-visible{outline:3px solid #e3c665;outline-offset:2px;border-radius:4px}
+
+/* Premium motion (GSAP): let JS drive transform directly on these, no CSS transition fighting the tween */
+.car.js-tilt{transition:box-shadow .25s,border-color .2s}
+.btn.js-magnet{transition:box-shadow .15s,background .15s}
 </style>
 </head>
 <body id="top">
@@ -629,6 +633,11 @@ body.loaded .hero-art{animation:fadeUp .8s .35s both}
   </div>
 </div>
 
+<!-- Premium motion libraries (progressive enhancement — site is fully functional without them) -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3/dist/ScrollTrigger.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lenis@1/dist/lenis.min.js"></script>
+
 <script>
 /* mobile menu */
 const mb=document.getElementById('menuBtn'),nl=document.getElementById('navLinks');
@@ -809,9 +818,11 @@ if(document.readyState==='complete'){document.body.classList.add('loaded');}
   function onScroll(){sh.classList.toggle('scrolled',window.scrollY>8);}
   window.addEventListener('scroll',onScroll,{passive:true});onScroll();})();
 
-/* reveal */
-const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:.1});
-document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+/* reveal (fallback — only used if the GSAP/ScrollTrigger CDN failed to load) */
+if(!(window.gsap && window.ScrollTrigger)){
+  const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:.1});
+  document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+}
 </script>
 
 <script>
@@ -1204,6 +1215,138 @@ document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
   document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&view.classList.contains('open')) closeView(); });
 })();
 
+</script>
+
+<script>
+/* ---- Premium motion: Lenis smooth scroll, GSAP ScrollTrigger reveals, hero parallax, 3D tilt, button polish ---- */
+(function(){
+  var reduceMotion = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+  if(reduceMotion) return; /* existing CSS + IO fallback already handles this safely */
+
+  var fine = !!(window.matchMedia && matchMedia('(hover:hover) and (pointer:fine)').matches);
+  var hasGSAP = !!(window.gsap && window.ScrollTrigger);
+
+  /* Smooth "momentum" scroll — desktop only, native scroll stays untouched on mobile */
+  if(fine && window.Lenis){
+    try{
+      var lenis = new window.Lenis({smoothWheel:true});
+      if(hasGSAP){
+        gsap.ticker.add(function(time){ lenis.raf(time*1000); });
+        gsap.ticker.lagSmoothing(0);
+        lenis.on('scroll', ScrollTrigger.update);
+      }else{
+        requestAnimationFrame(function raf(time){ lenis.raf(time); requestAnimationFrame(raf); });
+      }
+      window.__lenis = lenis;
+    }catch(e){}
+  }
+
+  if(!hasGSAP) return; /* CDN blocked — old CSS/IO reveal already covers this */
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  /* Reveal-on-scroll: sections & text, staggered by direct children */
+  document.querySelectorAll('.reveal').forEach(function(el){
+    if(el.id === 'carGrid') return; /* handled separately below, incl. re-renders */
+    el.style.opacity = 1; el.style.transform = 'none';
+    var kids = Array.prototype.slice.call(el.children);
+    if(!kids.length) return;
+    var tl = gsap.timeline({scrollTrigger:{trigger:el, start:'top 85%', once:true}});
+    if(el.classList.contains('split') && kids.length === 2){
+      tl.from(kids[0],{x:-46,opacity:0,duration:1,ease:'power3.out'},0)
+        .from(kids[1],{x:46,opacity:0,duration:1,ease:'power3.out'},0.08);
+    }else{
+      tl.from(kids,{y:38,opacity:0,duration:.9,ease:'power3.out',stagger:.12});
+    }
+  });
+
+  /* Occasion cards: staggered entrance, re-bound whenever a grid's content changes (Supabase load, filters) */
+  function revealCards(grid){
+    if(!grid) return;
+    if(grid.__revealTriggers) grid.__revealTriggers.forEach(function(st){ st.kill(); });
+    var cards = grid.querySelectorAll('.car');
+    if(!cards.length){ grid.__revealTriggers = []; return; }
+    grid.__revealTriggers = ScrollTrigger.batch(cards,{
+      start:'top 90%', once:true,
+      onEnter:function(batch){ gsap.from(batch,{y:34,opacity:0,duration:.7,ease:'power3.out',stagger:.09}); }
+    });
+  }
+  var carGrid = document.getElementById('carGrid');
+  if(carGrid){
+    carGrid.style.opacity = 1; carGrid.style.transform = 'none';
+    revealCards(carGrid);
+    if(window.MutationObserver) new MutationObserver(function(){ revealCards(carGrid); }).observe(carGrid,{childList:true});
+  }
+
+  window.addEventListener('load', function(){ ScrollTrigger.refresh(); });
+
+  /* Hero parallax */
+  var heroLogo = document.querySelector('.hero-logo');
+  var hero = document.querySelector('.hero');
+  if(heroLogo && hero){
+    gsap.to(heroLogo,{y:40,ease:'none',scrollTrigger:{trigger:hero,start:'top top',end:'bottom top',scrub:.6}});
+    if(fine){
+      var qx = gsap.quickTo(heroLogo,'x',{duration:.6,ease:'power3.out'});
+      var qr = gsap.quickTo(heroLogo,'rotationY',{duration:.6,ease:'power3.out'});
+      hero.addEventListener('mousemove',function(e){
+        var r = hero.getBoundingClientRect();
+        var px = (e.clientX-r.left)/r.width-.5;
+        qx(px*18); qr(px*6);
+      });
+      hero.addEventListener('mouseleave',function(){ qx(0); qr(0); });
+    }
+  }
+
+  /* 3D tilt on occasion cards — event delegation so it survives re-renders */
+  if(fine){
+    ['#carGrid','#aanbodGrid'].forEach(function(sel){
+      var container = document.querySelector(sel);
+      if(!container) return;
+      container.addEventListener('mousemove',function(e){
+        var card = e.target.closest('.car');
+        if(!card) return;
+        if(!card.classList.contains('js-tilt')){
+          card.classList.add('js-tilt');
+          gsap.set(card,{transformPerspective:800,transformOrigin:'center'});
+        }
+        if(!card.__qrx){
+          card.__qrx = gsap.quickTo(card,'rotationX',{duration:.4,ease:'power3.out'});
+          card.__qry = gsap.quickTo(card,'rotationY',{duration:.4,ease:'power3.out'});
+          card.__qy = gsap.quickTo(card,'y',{duration:.4,ease:'power3.out'});
+        }
+        var r = card.getBoundingClientRect();
+        var px = (e.clientX-r.left)/r.width-.5, py = (e.clientY-r.top)/r.height-.5;
+        card.__qrx(py*-7); card.__qry(px*9); card.__qy(-6);
+      });
+      container.addEventListener('mouseout',function(e){
+        var card = e.target.closest('.car');
+        if(!card || card.contains(e.relatedTarget)) return;
+        gsap.to(card,{rotationX:0,rotationY:0,y:0,duration:.5,ease:'power3.out'});
+      });
+    });
+  }
+
+  /* Button polish: subtle magnetic hover — delegated so it also covers buttons rendered later (modals, admin panel) */
+  if(fine){
+    document.addEventListener('mousemove',function(e){
+      var btn = e.target.closest('.btn');
+      if(!btn) return;
+      if(!btn.classList.contains('js-magnet')) btn.classList.add('js-magnet');
+      if(!btn.__qx){
+        btn.__qx = gsap.quickTo(btn,'x',{duration:.3,ease:'power3.out'});
+        btn.__qy = gsap.quickTo(btn,'y',{duration:.3,ease:'power3.out'});
+      }
+      var r = btn.getBoundingClientRect();
+      btn.__qx((e.clientX-r.left-r.width/2)*.25);
+      btn.__qy((e.clientY-r.top-r.height/2)*.3);
+    });
+    document.addEventListener('mouseout',function(e){
+      var btn = e.target.closest('.btn');
+      if(!btn || (btn.contains(e.relatedTarget))) return;
+      if(btn.__qx){ btn.__qx(0); btn.__qy(0); }
+    });
+  }
+})();
 </script>
 </body>
 </html>
