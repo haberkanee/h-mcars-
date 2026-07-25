@@ -918,6 +918,51 @@ h1,h2,h3{color:#fff}
 @media(min-width:900px){.hero-bg{object-position:center 46%}}
 @media(max-width:600px){.hero-bg{object-position:64% 50%}}
 
+
+/* =====================================================================
+   DESKTOP-OPMAAK. De herofoto is staand (941x1672); op een breed
+   scherm zou "cover" hem kapot bijsnijden. Daarom staat de foto op
+   desktop rechts op volle hoogte en loopt hij links naadloos over in
+   zwart, met de tekst op dat rustige vlak — dezelfde look als mobiel.
+   ===================================================================== */
+@media(min-width:900px){
+  .hero{min-height:92svh}
+  .hero-bg{left:auto;right:0;width:60%;object-fit:cover;object-position:center 42%;
+    -webkit-mask-image:linear-gradient(90deg,transparent 0,#000 22%);
+    mask-image:linear-gradient(90deg,transparent 0,#000 22%)}
+  .hero-shade{background:
+    linear-gradient(90deg,#0b0b0b 0%,#0b0b0b 30%,rgba(11,11,11,.45) 52%,rgba(11,11,11,0) 74%),
+    linear-gradient(0deg,rgba(11,11,11,.85) 0%,rgba(11,11,11,0) 26%)}
+  .hero-content{padding-top:170px;padding-bottom:96px}
+  .hero h1{font-size:clamp(52px,4.6vw,72px)}
+  .hero p.hero-sub{font-size:clamp(26px,2.2vw,38px);max-width:22ch}
+  .hero-cta .btn{padding:16px 32px;font-size:15.5px}
+  .hero-rail{top:50%}
+}
+@media(min-width:1700px){
+  .hero-bg{width:52%}
+}
+
+/* Welkomstsectie: op groot scherm meer hoogte en een bredere sluier,
+   zodat de tekst ook daar midden in het donker valt. */
+@media(min-width:900px){
+  .intro-sec{min-height:640px}
+  .intro-waas{background:radial-gradient(46% 58% at 50% 50%,rgba(11,11,11,.85) 0%,rgba(11,11,11,.55) 58%,rgba(11,11,11,0) 100%)}
+  .intro-inner{max-width:700px}
+}
+
+/* Occasions: edge-to-edge, maar op ultrabrede schermen begrensd zodat
+   kaarten en foto's niet onnatuurlijk groot worden. */
+@media(min-width:1760px){
+  #occasions .cars,#verkocht .cars{max-width:1720px;margin-left:auto;margin-right:auto}
+}
+
+/* Formulier en stappen: prettige breedte op desktop */
+@media(min-width:1200px){
+  #inkoop .offer{max-width:960px}
+  .stappen-rij{max-width:1240px;margin-left:auto;margin-right:auto}
+}
+
 </style>
 </head>
 <body id="top">
