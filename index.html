@@ -963,6 +963,19 @@ h1,h2,h3{color:#fff}
   .stappen-rij{max-width:1240px;margin-left:auto;margin-right:auto}
 }
 
+
+/* Aanbod-overlay altijd boven header, contactrail en hero */
+.aanbod{z-index:130}
+
+/* Desktop-hero: foto iets smaller en lager verankerd, zodat gevelnaam
+   EN de drie auto's allebei volledig in beeld staan. */
+@media(min-width:900px){
+  .hero-bg{width:52%;object-position:center 72%}
+}
+@media(min-width:1700px){
+  .hero-bg{width:46%;object-position:center 72%}
+}
+
 </style>
 </head>
 <body id="top">
@@ -1846,7 +1859,7 @@ document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
   function toggleSide(){ side.classList.toggle('open'); }
   function closeSide(){ side.classList.remove('open'); }
   var DEF_TITLE=document.title;
-  function openView(){ buildFilters(); render(); view.classList.add('open'); view.setAttribute('aria-hidden','false'); document.body.style.overflow='hidden'; document.title='Ons aanbod \u2014 H-M Cars'; }
+  function openView(){ try{ buildFilters(); render(); }catch(err){ if(window.console) console.error(err); } view.classList.add('open'); view.setAttribute('aria-hidden','false'); view.scrollTop=0; document.body.style.overflow='hidden'; document.title='Ons aanbod \u2014 H-M Cars'; }
   function closeView(){ view.classList.remove('open'); view.setAttribute('aria-hidden','true'); document.body.style.overflow=''; closeSide(); document.title=DEF_TITLE; }
 
   view.addEventListener('change',render);
