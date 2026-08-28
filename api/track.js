@@ -39,6 +39,8 @@ export default async function handler(req, res) {
     b = b || {};
 
     const row = {
+      type: (b.type === 'hartslag' ? 'hartslag' : 'bezoek'),
+      sessie: (typeof b.sessie === 'string' ? b.sessie.slice(0, 40) : null),
       pagina: b.pagina || null,
       referrer: b.referrer || null,
       utm_source: b.utm_source || null,
