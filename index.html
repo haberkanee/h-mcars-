@@ -1279,7 +1279,7 @@ article.car .car-pic,article.car .car-info{pointer-events:auto}
       </div>
     </div>
     <div class="foot-bottom">
-      <span>© 2026 H-M Cars Waddinxveen · KvK 89695119 · <a href="/privacy">Privacy</a> · <span style="opacity:.45" id="siteVersie">v26.11-R</span></span>
+      <span>© 2026 H-M Cars Waddinxveen · KvK 89695119 · <a href="/privacy">Privacy</a> · <span style="opacity:.45" id="siteVersie">v26.11-S</span></span>
       <span><a href="#" data-legal="privacy">Privacyverklaring</a> · <a href="#" data-legal="cookies">Cookies</a> · <a href="#" id="cookieInst">Cookie-instellingen</a> · <a href="#" data-legal="voorwaarden">Algemene voorwaarden</a><span id="locWisWrap" hidden> · <a href="#" id="locWis">Locatie niet meer delen</a></span> · <a href="#" data-admin="1">Beheer</a></span>
     </div>
   </div>
@@ -1764,7 +1764,7 @@ document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
   function geblokkeerdTekst(){
     var ua=navigator.userAgent||'', hoe;
     if(/Instagram|FBAN|FBAV|musical_ly|TikTok|BytedanceWebview/i.test(ua)) hoe='U opent de site in een app. Open hem via ⋯ → <strong>Openen in browser</strong> en probeer het daar.';
-    else if(/iPhone|iPad|iPod/.test(ua)) hoe='1. Open <strong>Instellingen</strong> → <strong>Privacy en beveiliging</strong> → <strong>Locatievoorzieningen</strong> (aan) → <strong>Safari-websites</strong> → <strong>Bij gebruik van de app</strong>.<br>2. Tik in Safari op <strong>aA</strong> → <strong>Website-instellingen</strong> → <strong>Locatie</strong> → <strong>Vraag</strong>.<br>3. Ververs deze pagina en probeer het opnieuw.';
+    else if(/iPhone|iPad|iPod/.test(ua)) hoe='1. Open <strong>Instellingen</strong> → <strong>Privacy en beveiliging</strong> → <strong>Locatievoorzieningen</strong> (aan) → <strong>Safari-sites</strong> → <strong>Bij gebruik van app</strong>, en zet <strong>Exacte locatie</strong> aan.<br>2. Tik in Safari op <strong>aA</strong> → <strong>Website-instellingen</strong> → <strong>Locatie</strong> → <strong>Vraag</strong>.<br>3. Ververs deze pagina en probeer het opnieuw.';
     else if(/Android/.test(ua)) hoe='Tik op het slotje links van het webadres → <strong>Machtigingen</strong> → <strong>Locatie</strong> → <strong>Toestaan</strong>, en probeer het opnieuw.';
     else hoe='Klik op het slotje links van het webadres, zet <strong>Locatie</strong> op <strong>Toestaan</strong> en probeer het opnieuw.';
     return '<p>Om de afstand te berekenen of een route te plannen hebben we uw locatie nodig. Uw browser staat locatie voor deze website nu niet toe.</p><p>'+hoe+'</p>';
@@ -1805,7 +1805,7 @@ document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
     if(code===1) tekst=geblokkeerdTekst();
     else if(code===3) tekst='<p>Uw locatie kon niet op tijd worden bepaald. Controleer of locatie aan staat op uw toestel en probeer het opnieuw.</p>';
     else if(!('geolocation' in navigator)||window.isSecureContext===false) tekst='<p>Uw browser kan geen locatie bepalen. Open de website in een andere browser en probeer het opnieuw.</p>';
-    else tekst='<p>Uw locatie kon niet worden bepaald. Zet locatie aan op uw toestel en probeer het opnieuw.</p>'+(/iPhone|iPad|iPod/.test(navigator.userAgent||'')?'<p class="ld-klein">iPhone: Instellingen \u2192 Privacy en beveiliging \u2192 Locatievoorzieningen \u2192 aan, en Safari-websites op \u201cBij gebruik van de app\u201d.</p>':'');
+    else tekst='<p>Uw locatie kon niet worden bepaald. Zet locatie aan op uw toestel en probeer het opnieuw.</p>'+(/iPhone|iPad|iPod/.test(navigator.userAgent||'')?'<p class="ld-klein">iPhone: Instellingen \u2192 Privacy en beveiliging \u2192 Locatievoorzieningen \u2192 aan, Safari-sites op \u201cBij gebruik van app\u201d en Exacte locatie aan.</p>':'');
     popup('Zet eerst uw locatie aan',tekst);
   }
   function bereken(knop){
