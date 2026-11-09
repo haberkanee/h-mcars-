@@ -14,6 +14,14 @@ import { SHOWROOM, BEWAAR_DAGEN, IP_BEWAAR_DAGEN, HARTSLAG_DAGEN, provincieNaam,
 const TYPES = ['bezoek', 'hartslag', 'pagina'];
 const kort = (v, n) => (typeof v === 'string' && v ? v.slice(0, n) : null);
 const hash = (s) => crypto.createHash('sha256').update('hm-loc|' + s).digest('hex');
+// Anoniem bezoek-id: hash van IP + browser met een sleutel die elke dag wisselt
+function anoniemId(req) {
+  const dag = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Amsterdam' }).format(new Date());
+  const zout = (process.env.CRON_SECRET || process.env.SUPABASE_SERVICE_KEY || '') + '|' + dag;
+  const ip = ((req.headers['x-forwarded-for'] || '').split(',')[0] || '').trim();
+  return 'a-' + crypto.createHash('sha256').update(zout + '|' + ip + '|' + (req.headers['user-agent'] || '')).digest('hex').slice(0, 20);
+}
+const stadUit = (req) => { try { return req.headers['x-vercel-ip-city'] ? decodeURIComponent(req.headers['x-vercel-ip-city']) : null; } catch (e) { return req.headers['x-vercel-ip-city'] || null; } };
 
 export default async function handler(req, res) {
   // Dagelijks opruimen door Vercel cron
@@ -37,7 +45,8 @@ export default async function handler(req, res) {
     /* ---------- Gedeelde locatie opslaan (toestemming gegeven in de browser) ---------- */
     if (b.type === 'locatie') {
       const lat = Number(b.lat), lng = Number(b.lng), acc = Number(b.nauwkeurigheid);
-      const sessie = kort(b.sessie, 40), sleutel = kort(b.sleutel, 80);
+      // Zonder cookietoestemming: koppelen aan het anonieme bezoek van dezelfde bezoeker
+      const sessie = b.anoniem === true ? anoniemId(req) : kort(b.sessie, 40), sleutel = kort(b.sleutel, 80);
       if (!sessie || !sleutel || sleutel.length < 16 || !isFinite(lat) || !isFinite(lng) ||
           Math.abs(lat) > 90 || Math.abs(lng) > 180 || (lat === 0 && lng === 0)) {
         res.status(400).json({ error: 'ongeldige locatie' }); return;
@@ -58,9 +67,8 @@ export default async function handler(req, res) {
         method: 'POST', headers: { ...kop, 'Content-Type': 'application/json', Prefer: 'return=minimal' }, body: JSON.stringify(rij)
       });
       // Melding naar de eigenaar, één keer per bezoek (niet opnieuw bij nog een klik in hetzelfde bezoek)
-      if (r.ok && !(Array.isArray(eerder) && eerder.length)) {
-        let stad = null; try { stad = req.headers['x-vercel-ip-city'] ? decodeURIComponent(req.headers['x-vercel-ip-city']) : null; } catch (e) {}
-        await meldLocatie(rij, { stad, ua: leesUA(req.headers['user-agent']), knop: kort(b.knop, 20) }).catch(() => {});
+      if (r.ok && b.stil !== true && !(Array.isArray(eerder) && eerder.length)) {
+        await meldLocatie(rij, { stad: stadUit(req), ua: leesUA(req.headers['user-agent']), knop: kort(b.knop, 20) }).catch(() => {});
       }
       res.status(r.ok ? 204 : 500).end();
       return;
@@ -124,62 +132,117 @@ export default async function handler(req, res) {
     // van de herkomst alleen het domein. Het bezoek-id is een hash met een dagelijks wisselende sleutel,
     // zodat een bezoeker alleen binnen dezelfde dag als één bezoeker telt en niet te herleiden is.
     if (b.anoniem === true) {
-      const dag = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Amsterdam' }).format(new Date());
-      const zout = (process.env.CRON_SECRET || process.env.SUPABASE_SERVICE_KEY || '') + '|' + dag;
-      row.sessie = 'a-' + crypto.createHash('sha256').update(zout + '|' + (ip || '') + '|' + (h['user-agent'] || '')).digest('hex').slice(0, 20);
+      row.sessie = anoniemId(req);
       let herkomst = null; try { herkomst = b.referrer ? new URL(b.referrer).origin : null; } catch (e) {}
       Object.assign(row, { ip: null, user_agent: null, postcode: null, taal: null, scherm: null, referrer: herkomst });
+    }
+    // Melding bij een nieuwe bezoeker: één keer per bezoeker (per bezoek of, anoniem, per dag),
+    // niet voor bots en niet voor de eigenaar zelf (stil=true vanuit het beheer)
+    let nieuw = false;
+    if (type === 'bezoek' && b.stil !== true && extra.apparaat !== 'Bot' && meldingAan('bezoek') && row.sessie) {
+      const al = await fetch(URLB + '/rest/v1/bezoeken?select=id&type=eq.bezoek&sessie=eq.' + encodeURIComponent(row.sessie) + '&limit=1', { headers: kop })
+        .then((x) => (x.ok ? x.json() : [{}])).catch(() => [{}]);
+      nieuw = Array.isArray(al) && al.length === 0;
     }
     let r = await opslaan({ ...row, ...extra });
     // Staan de nieuwe kolommen nog niet in de database? Dan toch het bezoek bewaren zoals vroeger.
     if (!r.ok && Object.keys(extra).length) r = await opslaan(row);
+    if (r.ok && nieuw) await meldBezoek({ ...row, ...extra }, URLB, kop).catch(() => {});
     res.status(r.ok ? 204 : 500).end();
   } catch (e) {
     res.status(500).end();
   }
 }
 
-/* ---------- Melding bij een gedeelde locatie ----------
+/* ---------- Meldingen ----------
    Pushbericht via ntfy (NTFY_TOPIC) en/of e-mail via Resend (RESEND_API_KEY + MELDING_EMAIL).
-   Zonder deze variabelen gebeurt er niets. Een mislukte melding houdt het opslaan nooit tegen. */
-async function meldLocatie(rij, { stad, ua, knop }) {
-  const topic = process.env.NTFY_TOPIC, resendKey = process.env.RESEND_API_KEY, mail = process.env.MELDING_EMAIL;
-  if (!topic && !(resendKey && mail)) return;
-  const site = (process.env.SITE_URL || 'https://www.h-mcars.nl').replace(/\/$/, '');
-  const kaart = 'https://www.google.com/maps?q=' + rij.lat + ',' + rij.lng;
-  const km = String(rij.afstand_km).replace('.', ',');
-  const toestel = [ua.apparaat, ua.browser].filter(Boolean).join(' \u00b7 ');
-  const tijd = new Intl.DateTimeFormat('nl-NL', { timeZone: 'Europe/Amsterdam', dateStyle: 'short', timeStyle: 'short' }).format(new Date());
-  const waar = knop === 'route' ? 'via Route plannen' : 'via Afstand berekenen';
-  const titel = 'Locatie gedeeld: ' + km + ' km van de showroom';
-  const regels = [
-    (stad ? 'Omgeving (schatting): ' + stad : null),
-    'Afstand hemelsbreed: ' + km + ' km',
-    'Nauwkeurigheid: ' + (rij.nauwkeurigheid_m != null ? '\u00b1 ' + rij.nauwkeurigheid_m + ' m' : 'onbekend') + ' (opgeslagen op ~100 m)',
-    (toestel ? 'Toestel: ' + toestel : null),
-    'Gedeeld ' + waar + ', ' + tijd
-  ].filter(Boolean);
+   MELD_BEZOEKEN = beide (standaard) | push | mail | uit  → meldingen bij nieuwe bezoekers
+   MELD_LOCATIE  = beide (standaard) | push | mail | uit  → meldingen bij een gedeelde locatie
+   MELD_MAIL_MAX = maximaal aantal bezoekers-mails per dag (standaard 90; Resend gratis = 100/dag)
+   Een mislukte melding houdt het opslaan nooit tegen. */
+function kanalen(soort) {
+  const stand = String(process.env[soort === 'bezoek' ? 'MELD_BEZOEKEN' : 'MELD_LOCATIE'] || 'beide').toLowerCase();
+  const push = !!process.env.NTFY_TOPIC && (stand === 'beide' || stand === 'push');
+  const mail = !!(process.env.RESEND_API_KEY && process.env.MELDING_EMAIL) && (stand === 'beide' || stand === 'mail');
+  return { push, mail };
+}
+function meldingAan(soort) { const k = kanalen(soort); return k.push || k.mail; }
+const SITE = () => (process.env.SITE_URL || 'https://www.h-mcars.nl').replace(/\/$/, '');
+const nuTijd = () => new Intl.DateTimeFormat('nl-NL', { timeZone: 'Europe/Amsterdam', dateStyle: 'short', timeStyle: 'short' }).format(new Date());
+
+async function verstuur(soort, { titel, regels, klik, knoppen, tag }, { mail = true } = {}) {
+  const k = kanalen(soort);
   const met = (ms) => ({ signal: AbortSignal.timeout(ms) });
   const taken = [];
-  if (topic) {
+  if (k.push) {
     taken.push(fetch('https://ntfy.sh/', {
       method: 'POST', headers: { 'Content-Type': 'application/json' }, ...met(4000),
-      body: JSON.stringify({ topic, title: titel, message: regels.join('\n'), tags: ['round_pushpin'], click: kaart,
-        actions: [{ action: 'view', label: 'Op kaart', url: kaart }, { action: 'view', label: 'Statistieken', url: site + '/#beheer' }] })
+      body: JSON.stringify({ topic: process.env.NTFY_TOPIC, title: titel, message: regels.join('\n'), tags: [tag], click: klik,
+        actions: knoppen.map((x) => ({ action: 'view', label: x[0], url: x[1] })) })
     }));
   }
-  if (resendKey && mail) {
+  if (k.mail && mail) {
     const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
     taken.push(fetch('https://api.resend.com/emails', {
-      method: 'POST', headers: { Authorization: 'Bearer ' + resendKey, 'Content-Type': 'application/json' }, ...met(4000),
+      method: 'POST', headers: { Authorization: 'Bearer ' + process.env.RESEND_API_KEY, 'Content-Type': 'application/json' }, ...met(4000),
       body: JSON.stringify({
-        from: process.env.MELDING_AFZENDER || 'H-M Cars <onboarding@resend.dev>', to: [mail], subject: titel,
+        from: process.env.MELDING_AFZENDER || 'H-M Cars <onboarding@resend.dev>', to: [process.env.MELDING_EMAIL], subject: titel,
         html: '<div style="font-family:Arial,sans-serif;font-size:15px;line-height:1.6"><p><strong>' + esc(titel) + '</strong></p><p>' + regels.map(esc).join('<br>') +
-          '</p><p><a href="' + kaart + '">Bekijk op de kaart</a> &middot; <a href="' + site + '/#beheer">Statistieken</a></p></div>'
+          '</p><p>' + knoppen.map((x) => '<a href="' + x[1] + '">' + esc(x[0]) + '</a>').join(' &middot; ') + '</p></div>'
       })
     }));
   }
   await Promise.allSettled(taken);
+}
+
+async function meldLocatie(rij, { stad, ua, knop }) {
+  if (!meldingAan('locatie')) return;
+  const kaart = 'https://www.google.com/maps?q=' + rij.lat + ',' + rij.lng;
+  const km = String(rij.afstand_km).replace('.', ',');
+  const toestel = [ua.apparaat, ua.browser].filter(Boolean).join(' · ');
+  const waar = knop === 'route' ? 'via Route plannen' : 'via Afstand berekenen';
+  await verstuur('locatie', {
+    titel: 'Locatie gedeeld: ' + km + ' km van de showroom', tag: 'round_pushpin', klik: kaart,
+    regels: [
+      (stad ? 'Omgeving (schatting): ' + stad : null),
+      'Afstand hemelsbreed: ' + km + ' km',
+      'Nauwkeurigheid: ' + (rij.nauwkeurigheid_m != null ? '± ' + rij.nauwkeurigheid_m + ' m' : 'onbekend') + ' (opgeslagen op ~100 m)',
+      (toestel ? 'Toestel: ' + toestel : null),
+      'Gedeeld ' + waar + ', ' + nuTijd()
+    ].filter(Boolean),
+    knoppen: [['Op kaart', kaart], ['Statistieken', SITE() + '/#beheer']]
+  });
+}
+
+async function meldBezoek(rij, URLB, kop) {
+  if (!meldingAan('bezoek')) return;
+  // Begrens het aantal e-mails per dag (pushberichten gaan altijd door)
+  let mail = true;
+  if (kanalen('bezoek').mail) {
+    const max = parseInt(process.env.MELD_MAIL_MAX || '90', 10) || 90;
+    const vandaag = new Date(); vandaag.setUTCHours(0, 0, 0, 0);
+    const t = await fetch(URLB + '/rest/v1/bezoeken?select=id&type=eq.bezoek&created_at=gte.' + encodeURIComponent(vandaag.toISOString()),
+      { headers: { ...kop, Prefer: 'count=exact', Range: '0-0' } }).catch(() => null);
+    const n = t ? parseInt((t.headers.get('content-range') || '/0').split('/')[1], 10) || 0 : 0;
+    if (n > max) mail = false;
+  }
+  let herkomst = rij.utm_source || null;
+  if (!herkomst && rij.referrer) { try { herkomst = new URL(rij.referrer).hostname.replace(/^www\./, ''); } catch (e) { herkomst = null; } }
+  if (herkomst && /h-mcars/.test(herkomst)) herkomst = null;
+  const plaats = [rij.stad, rij.provincie, rij.land].filter(Boolean).join(', ') || 'onbekend';
+  const toestel = [rij.apparaat, rij.browser, rij.os].filter(Boolean).join(' · ');
+  await verstuur('bezoek', {
+    titel: 'Nieuwe bezoeker' + (rij.stad ? ' uit ' + rij.stad : ''), tag: 'eyes', klik: SITE() + '/#beheer',
+    regels: [
+      'Plaats (schatting via IP): ' + plaats,
+      (toestel ? 'Toestel: ' + toestel : null),
+      'Herkomst: ' + (herkomst || 'direct') + (rij.utm_campaign ? ' (' + rij.utm_campaign + ')' : ''),
+      'Pagina: ' + (rij.pagina || '/'),
+      (String(rij.sessie || '').startsWith('a-') ? 'Zonder cookietoestemming (anoniem)' : 'Met cookietoestemming'),
+      nuTijd()
+    ].filter(Boolean),
+    knoppen: [['Statistieken', SITE() + '/#beheer']]
+  }, { mail });
 }
 
 /* ---------- Bewaartermijnen ---------- */
